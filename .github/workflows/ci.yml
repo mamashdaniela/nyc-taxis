@@ -1,0 +1,28 @@
+name: dbt CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  dbt-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: dbt deps --profiles-dir .
+      - name: Download one month of sample data
+        run: python scripts/download_data.py --year 2024 --months 1
+      - name: Build and test
+        run: dbt build --target ci --profiles-dir .
+      - name: Generate docs
+        run: dbt docs generate --target ci --profiles-dir .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dbt-docs
+          path: target/

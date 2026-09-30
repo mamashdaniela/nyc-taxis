@@ -1,0 +1,37 @@
+version: 2
+
+models:
+  - name: dim_zones
+    description: One row per taxi zone.
+    columns:
+      - name: zone_id
+        tests: [unique, not_null]
+
+  - name: fct_trips
+    description: >
+      One row per trip. Incremental on pickup_at: new trips are merged in
+      via delete+insert on trip_id.
+    columns:
+      - name: trip_id
+        tests: [not_null]
+      - name: pickup_zone_id
+        description: FK to dim_zones.
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_zones')
+                field: zone_id
+              config:
+                severity: warn   # seed only has a few zones; full lookup should pass
+      - name: payment_type
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['flex_fare', 'credit_card', 'cash', 'no_charge', 'dispute', 'unknown', 'voided', 'other']
+
+  - name: mart_daily_revenue_by_borough
+    description: Daily trip counts and revenue by pickup borough. Dashboard-ready.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [pickup_date, pickup_borough]

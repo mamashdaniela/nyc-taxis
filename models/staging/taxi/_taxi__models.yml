@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: stg_taxi__trips
+    description: Cleaned, renamed yellow taxi trips. Out-of-range pickup dates are dropped.
+    columns:
+      - name: trip_id
+        description: Surrogate key built from vendor, timestamps, locations and amount.
+        tests:
+          - not_null
+          # TODO(learning): this may fail on real data (duplicate trips). Investigate,
+          # then decide: dedupe in staging, relax to a warn severity, or document it.
+          - unique:
+              config:
+                severity: warn
+      - name: pickup_at
+        tests:
+          - not_null
+      - name: payment_type_id
+        description: TLC payment code (see payment_type_description macro).
+
+  - name: stg_taxi__zones
+    description: Taxi zone lookup, sourced from the taxi_zone_lookup seed.
+    columns:
+      - name: location_id
+        tests:
+          - unique
+          - not_null

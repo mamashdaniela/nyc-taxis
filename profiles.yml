@@ -1,0 +1,12 @@
+# Kept in the repo (no secrets) so CI and teammates can run:  dbt build --profiles-dir .
+nyc_taxi:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: nyc_taxi.duckdb
+      threads: 4
+    ci:
+      type: duckdb
+      path: ci.duckdb
+      threads: 4

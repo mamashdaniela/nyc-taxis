@@ -1,0 +1,19 @@
+version: 2
+
+sources:
+  - name: taxi_raw
+    description: >
+      Raw NYC TLC yellow taxi trip records, stored as Hive-partitioned Parquet
+      (year=YYYY/month=MM). Read in place by DuckDB; nothing is loaded into the warehouse.
+    meta:
+      # Swap this path for 's3://your-bucket/yellow_tripdata/*/*/*.parquet' once files are on S3
+      # (DuckDB needs the httpfs extension + credentials for that).
+      external_location: "read_parquet('data/raw/yellow_tripdata/*/*/*.parquet', hive_partitioning = true, union_by_name = true)"
+    tables:
+      - name: yellow_trips
+        description: One row per yellow taxi trip as reported by the vendor.
+        columns:
+          - name: tpep_pickup_datetime
+            description: Timestamp the meter was engaged.
+            tests:
+              - not_null
